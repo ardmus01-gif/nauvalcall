@@ -27,20 +27,22 @@ admin.initializeApp({
 
 // Arama Gönderme Endpoint'i
 app.post('/send-call', async (req, res) => {
-  const { token, callerName, roomId, isVideo, receiverId } = req.body; // 💡 receiverId eklendi
+  const { token, callerName, roomId, isVideo, receiverId } = req.body;
 
   const message = {
     token: token,
     data: {
-      type: 'call',
+      type: 'hybrid_call', // 🚀 LingoCall ile aynı tip
+      title: 'Gelen Arama',
+      body: `${callerName} arıyor...`,
       callerName: String(callerName),
       roomId: String(roomId),
       isVideo: String(isVideo),
-      receiverId: String(receiverId) // 🚀 KRİTİK: Karşı tarafın ID'si artık paketin içinde
+      receiverId: String(receiverId)
     },
     android: {
-      priority: 'high',
-      ttl: 0
+      priority: 'high', // 🚀 KRİTİK
+      ttl: 0 // 🚀 Hemen gönder
     }
   };
 

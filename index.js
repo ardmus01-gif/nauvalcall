@@ -27,34 +27,27 @@ admin.initializeApp({
 
 // Arama Gönderme Endpoint'i
 app.post('/send-call', async (req, res) => {
-  const { token, callerName, roomId, isVideo } = req.body;
-
-  if (!token) {
-      return res.status(400).send({ error: "Token eksik!" });
-  }
+  const { token, callerName, roomId, isVideo, receiverId } = req.body; // 💡 receiverId eklendi
 
   const message = {
     token: token,
-    // 💡 Sadece 'data' gönderiyoruz. 
-    // Eğer 'notification' objesi eklerseniz Android arka planda onMessageReceived tetiklenmeyebilir!
     data: {
       type: 'call',
       callerName: String(callerName),
       roomId: String(roomId),
-      isVideo: String(isVideo)
+      isVideo: String(isVideo),
+      receiverId: String(receiverId) // 🚀 KRİTİK: Karşı tarafın ID'si artık paketin içinde
     },
     android: {
-      priority: 'high', // 🚀 KRİTİK: Uyuyan cihazı uyandırır
-      ttl: 0 // Hemen teslim et (milisaniye)
+      priority: 'high',
+      ttl: 0
     }
   };
 
   try {
-    const response = await admin.messaging().send(message);
-    console.log('Mesaj başarıyla gönderildi:', response);
-    res.status(200).send({ success: true, messageId: response });
+    await admin.messaging().send(message);
+    res.status(200).send({ success: true });
   } catch (error) {
-    console.error('Mesaj gönderme hatası:', error);
     res.status(500).send({ error: error.message });
   }
 });

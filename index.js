@@ -32,17 +32,20 @@ app.post('/send-call', async (req, res) => {
   const message = {
     token: token,
     data: {
-      type: 'hybrid_call', // 🚀 LingoCall ile aynı tip
-      title: 'Gelen Arama',
-      body: `${callerName} arıyor...`,
+      type: 'hybrid_call',
       callerName: String(callerName),
       roomId: String(roomId),
       isVideo: String(isVideo),
       receiverId: String(receiverId)
     },
     android: {
-      priority: 'high', // 🚀 KRİTİK
-      ttl: 0 // 🚀 Hemen gönder
+      priority: 'high', // 🚀 KRİTİK: Cihazı uyandırır
+      ttl: 0,           // 🚀 Anında iletim
+      notification: {
+        channel_id: 'calls_channel',
+        priority: 'max',
+        visibility: 'public'
+      }
     }
   };
 

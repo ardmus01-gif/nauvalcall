@@ -1,12 +1,12 @@
 const express = require('express');
-const admin = require('firebase-admin'); // Bunu dependencies'e ekleyeceğiz
+const admin = require('firebase-admin');
 const cors = require('cors');
 const app = express();
 
 app.use(express.json());
 app.use(cors());
 
-// ⚠️ BURASI KRİTİK: İndirdiğin JSON dosyasının içindeki her şeyi buraya yapıştır
+// ⚠️ Firebase Service Account Bilgilerin (Olduğu gibi korundu)
 const serviceAccount = {
   "type": "service_account",
   "project_id": "neuvalcall",
@@ -25,29 +25,39 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 
+// Arama Gönderme Endpoint'i
 app.post('/send-call', async (req, res) => {
   const { token, callerName, roomId, isVideo } = req.body;
 
+  if (!token) {
+      return res.status(400).send({ error: "Token eksik!" });
+  }
+
   const message = {
     token: token,
+    // 💡 Sadece 'data' gönderiyoruz. 
+    // Eğer 'notification' objesi eklerseniz Android arka planda onMessageReceived tetiklenmeyebilir!
     data: {
       type: 'call',
-      callerName: callerName,
-      roomId: roomId,
+      callerName: String(callerName),
+      roomId: String(roomId),
       isVideo: String(isVideo)
     },
     android: {
-      priority: 'high'
+      priority: 'high', // 🚀 KRİTİK: Uyuyan cihazı uyandırır
+      ttl: 0 // Hemen teslim et (milisaniye)
     }
   };
 
   try {
     const response = await admin.messaging().send(message);
-    res.status(200).send({ success: true, response });
+    console.log('Mesaj başarıyla gönderildi:', response);
+    res.status(200).send({ success: true, messageId: response });
   } catch (error) {
+    console.error('Mesaj gönderme hatası:', error);
     res.status(500).send({ error: error.message });
   }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`NeuValCall V1 Backend Aktif!`));
+app.listen(PORT, () => console.log(`NeuValCall V1 Backend Aktif! Port: ${PORT}`));

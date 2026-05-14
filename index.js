@@ -31,7 +31,7 @@ app.post('/send-call', async (req, res) => {
 
   const message = {
     token: token,
-    data: { // Her şeyi data içine koyuyoruz
+    data: { // notification bloğunu sildik, her şeyi data içine koyduk
       type: 'hybrid_call',
       callerName: String(callerName),
       roomId: String(roomId),

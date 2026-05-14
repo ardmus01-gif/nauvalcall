@@ -31,7 +31,7 @@ app.post('/send-call', async (req, res) => {
 
   const message = {
     token: token,
-    data: {
+    data: { // Her şeyi data içine koyuyoruz
       type: 'hybrid_call',
       callerName: String(callerName),
       roomId: String(roomId),
@@ -39,16 +39,11 @@ app.post('/send-call', async (req, res) => {
       receiverId: String(receiverId)
     },
     android: {
-      priority: 'high', // 🚀 KRİTİK
-      ttl: 0,
-      notification: {
-        channel_id: 'calls_channel',
-        priority: 'max',
-        visibility: 'public'
-      }
+      priority: 'high',
+      ttl: 0
     }
   };
-
+  
   try {
     await admin.messaging().send(message);
     res.status(200).send({ success: true });

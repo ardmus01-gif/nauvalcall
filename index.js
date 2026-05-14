@@ -39,8 +39,8 @@ app.post('/send-call', async (req, res) => {
       receiverId: String(receiverId)
     },
     android: {
-      priority: 'high', // 🚀 KRİTİK: Cihazı uyandırır
-      ttl: 0,           // 🚀 Anında iletim
+      priority: 'high', // 🚀 KRİTİK
+      ttl: 0,
       notification: {
         channel_id: 'calls_channel',
         priority: 'max',

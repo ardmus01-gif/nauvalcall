@@ -30,19 +30,20 @@ app.post('/send-call', async (req, res) => {
   const { token, callerName, roomId, isVideo, receiverId } = req.body;
 
   const message = {
-    token: token,
-    data: { // notification bloğunu sildik, her şeyi data içine koyduk
-      type: 'hybrid_call',
-      callerName: String(callerName),
-      roomId: String(roomId),
-      isVideo: String(isVideo),
-      receiverId: String(receiverId)
-    },
-    android: {
-      priority: 'high',
-      ttl: 0
-    }
-  };
+  token: token,
+  data: { // 🚀 Sadece data bloğu kullanıyoruz (Uyandırma garantisi için)
+    type: 'hybrid_call',
+    callerName: String(callerName),
+    roomId: String(roomId),
+    isVideo: String(isVideo),
+    receiverId: String(receiverId)
+  },
+  android: {
+    priority: 'high', // 🚀 KRİTİK
+    ttl: 0,           // 🚀 Anında iletim
+    direct_boot_ok: true // 🚀 Cihaz yeni açılsa bile çalışsın
+  }
+};
   
   try {
     await admin.messaging().send(message);

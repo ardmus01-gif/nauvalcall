@@ -3,7 +3,8 @@ const admin = require('firebase-admin');
 const cors = require('cors');
 const app = express();
 
-app.use(express.json());
+// JSON ayrıştırıcıyı en başa koyuyoruz
+app.use(express.json()); 
 app.use(cors());
 
 const serviceAccount = {
@@ -14,36 +15,35 @@ const serviceAccount = {
 };
 
 if (!admin.apps.length) {
-  try {
-    admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-    console.log("Firebase Başlatıldı");
-  } catch (e) { console.error("Firebase Hatası:", e); }
+  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 }
 
 app.post('/api/sendCall', async (req, res) => {
-  // Gelen veriyi logla (Vercel Dashboard'da ne geldiğini görmek için)
-  console.log("Gelen Gövde (Body):", req.body);
+  // --- HATA AYIKLAMA LOGLARI ---
+  console.log("Gelen Headerlar:", req.headers);
+  console.log("Gelen Ham Gövde (Body):", req.body);
 
-  // Android'den gelebilecek alternatif isimleri kontrol et
-  const targetToken = req.body.fcmToken || req.body.token;
-  const roomId = req.body.roomId;
-  const callerName = req.body.callerName || "Bilinmeyen";
+  // Veri gelmezse veya boş gelirse manuel kontrol
+  if (!req.body || Object.keys(req.body).length === 0) {
+    return res.status(400).send({ error: "Sunucuya boş veri ulaştı!" });
+  }
 
-  if (!targetToken || !roomId) {
-    console.error("Hata: fcmToken veya roomId eksik!");
+  const { fcmToken, roomId, callerName, callerId } = req.body;
+
+  if (!fcmToken || !roomId) {
     return res.status(400).send({ 
-        error: "Eksik veri!", 
-        gelenData: req.body 
+        error: "fcmToken veya roomId eksik!",
+        debug: req.body 
     });
   }
 
   const message = {
-    token: targetToken,
+    token: fcmToken,
     data: { 
       type: 'hybrid_call',
-      callerName: String(callerName),
+      callerName: String(callerName || "Bilinmeyen"),
       roomId: String(roomId),
-      callerId: String(req.body.callerId || "")
+      callerId: String(callerId || "")
     },
     android: { priority: 'high', ttl: 0 }
   };
@@ -57,5 +57,4 @@ app.post('/api/sendCall', async (req, res) => {
   }
 });
 
-app.get('/', (req, res) => { res.send('Backend Aktif!'); });
 module.exports = app;

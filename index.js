@@ -23,36 +23,34 @@ if (!admin.apps.length) {
 
 // 🚀 ANDROID UYUMU: MainActivity.kt içindeki URL ile aynı olmalı
 app.post('/api/sendCall', async (req, res) => {
-  // Android'den gelen verileri alıyoruz
-  const { fcmToken, callerName, roomId, callerId, isVideo } = req.body;
+  // Android'den gelen değişken isimleri tam olarak bunlar olmalı:
+  const { fcmToken, callerName, roomId, callerId } = req.body;
 
-  if (!fcmToken || !roomId) {
-    return res.status(400).send({ error: "fcmToken ve roomId gerekli!" });
+  if (!fcmToken) {
+    console.error("Hata: FCM Token gelmedi");
+    return res.status(400).send({ error: "fcmToken gerekli!" });
   }
 
   const message = {
-    token: fcmToken,
+    token: fcmToken, // Android'den gelen hedef telefonun token'ı
     data: { 
-      type: 'hybrid_call', // MyFirebaseMessagingService.kt bunu kontrol ediyor
-      callerName: String(callerName || "Aile Üyesi"),
+      type: 'hybrid_call',
+      callerName: String(callerName || "Bilinmeyen"),
       roomId: String(roomId),
-      callerId: String(callerId || ""), 
-      isVideo: String(isVideo || "true")
+      callerId: String(callerId || "")
     },
     android: {
       priority: 'high',
-      ttl: 0,
-      direct_boot_ok: true
+      ttl: 0
     }
   };
   
   try {
-    const response = await admin.messaging().send(message);
-    console.log('Bildirim gönderildi:', response);
-    res.status(200).send({ success: true, response });
+    await admin.messaging().send(message);
+    res.status(200).send({ success: true });
   } catch (error) {
-    console.error('FCM Hatası:', error);
-    res.status(500).send({ error: error.message });
+    console.error('FCM Gönderim Hatası:', error);
+    res.status(500).send({ error: error.message }); // 500 hatasını burası veriyor
   }
 });
 

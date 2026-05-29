@@ -12,19 +12,14 @@ const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
 const projectId = process.env.FIREBASE_PROJECT_ID;
 
 if (!admin.apps.length) {
-  try {
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: projectId,
-        clientEmail: clientEmail,
-        // KRİTİK DÜZELTME: JWT Signature hatasını bu satır çözer
-        privateKey: privateKey.replace(/\\n/g, '\n'),
-      }),
-    });
-    console.log("Firebase Admin Başarıyla Başlatıldı");
-  } catch (error) {
-    console.error("Firebase Başlatma Hatası:", error);
-  }
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      // Bu satır JWT hatasını çözmek için hayati önem taşır:
+      privateKey: privateKey.replace(/\\n/g, '\n'), 
+    }),
+  });
 }
 
 app.post('/api/sendCall', async (req, res) => {
